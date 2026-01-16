@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <title>Pip-Boy</title>
+
+  <!-- PWA manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    :root{
+      --bg:#000000;
+      --fg:#7CFF9B;   /* bright neon green */
+      --fg2:#B6FFCC;
+      --line:rgba(182,255,204,.18);
+      --shadow:rgba(124,255,155,.25);
+    }
+
+    html,body{ height:100%; margin:0; background:#000; }
+    body{
+      overflow:hidden;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      color:var(--fg);
+      user-select:none;
+      -webkit-user-select:none;
+    }
+
+    .screen{
+      height:100%;
+      background:#000; /* SOLID BLACK */
+      position:relative;
+    }
+
+    /* CRT scanlines */
+    .scanlines::before{
+      content:"";
+      position:absolute; inset:0;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(0,0,0,.35) 0px,
+        rgba(0,0,0,.35) 1px,
+        rgba(0,0,0,0) 3px,
+        rgba(0,0,0,0) 6px
+      );
+      pointer-events:none;
+      opacity:.72;
+    }
+
+    /* Moving sweep */
+    .scanlines::after{
+      content:"";
+      position:absolute; inset:-30% 0;
+      background: linear-gradient(to bottom, transparent, rgba(124,255,155,.12), transparent);
+      animation:sweep 4.5s linear infinite;
+      pointer-events:none;
+      opacity:.62;
+    }
+
+    @keyframes sweep{
+      from{ transform:translateY(-40%); }
+      to{ transform:translateY(60%); }
+    }
+
+    /* Top tabs (Phase 1: visual only) */
+    .tabs{
+      display:flex;
+      gap:18px;
+      padding:14px 18px 10px;
+      border-bottom:1px solid var(--line);
+      letter-spacing:.28em;
+      font-size:14px;
+      text-transform:uppercase;
+    }
+    .tab{ opacity:.6; padding-bottom:6px; }
+    .tab.active{
+      opacity:1;
+      border-bottom:2px solid var(--fg);
+      text-shadow:0 0 14px var(--shadow);
+    }
+
+    .content{
+      padding:18px;
+      height:calc(100% - 54px);
+      box-sizing:border-box;
+    }
+
+    .statGrid{
+      display:grid;
+      grid-template-columns:1.1fr 1fr;
+      height:100%;
+      border:1px solid var(--line);
+      background:rgba(124,255,155,.03);
+    }
+
+    .panel{
+      padding:16px;
+      border-right:1px solid var(--line);
+      position:relative;
+      box-sizing:border-box;
+    }
+    .panel:last-child{ border-right:none; }
+
+    /* STAT small clock */
+    .miniClock{
+      position:absolute;
+      top:12px;
+      right:16px;
+      font-size:14px;
+      letter-spacing:.22em;
+      text-shadow:0 0 14px var(--shadow);
+      opacity:.95;
+    }
+
+    /* Silhouette placeholder */
+    .silhouette{
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .silhouetteBox{
+      width:80%;
+      aspect-ratio:3/4;
+      border:1px solid var(--line);
+      background:
+        radial-gradient(120px 120px at 50% 30%, rgba(124,255,155,.12), transparent 65%);
+      box-shadow:0 0 24px rgba(124,255,155,.15);
+      position:relative;
+    }
+    .silhouetteBox::after{
+      content:"VAULT-TEC";
+      position:absolute;
+      bottom:10px; left:10px;
+      font-size:12px;
+      letter-spacing:.25em;
+      opacity:.7;
+    }
+
+    /* Meters */
+    .meters{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      height:100%;
+    }
+    .meterTitle{
+      display:flex;
+      justify-content:space-between;
+      font-size:12px;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      opacity:.95;
+    }
+    .bar{
+      height:14px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      overflow:hidden;
+      background:rgba(0,0,0,.55);
+    }
+    .fill{
+      height:100%;
+      background:var(--fg);
+      box-shadow:0 0 18px rgba(124,255,155,.3);
+      transition:width .8s ease;
+    }
+
+    .footerLine{
+      position:absolute;
+      bottom:16px;
+      right:16px;
+      font-size:12px;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      opacity:.9;
+    }
+
+    /* Boot overlay */
+    .boot{
+      position:absolute; inset:0;
+      background:#000;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+      padding:18px;
+      z-index:10;
+      box-sizing:border-box;
+    }
+
+    .bootHeader{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      border-bottom:1px solid var(--line);
+      padding-bottom:10px;
+      letter-spacing:.28em;
+      font-size:14px;
+      text-transform:uppercase;
+    }
+
+    .bootLog{
+      flex:1;
+      border:1px solid var(--line);
+      padding:14px;
+      background:rgba(124,255,155,.02);
+      font-size:12px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      overflow:hidden;
+      box-sizing:border-box;
+    }
+
+    .bootProgress{
+      border:1px solid var(--line);
+      padding:10px 12px;
+      background:rgba(124,255,155,.02);
+      box-sizing:border-box;
+    }
+
+    .bootProgressTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      font-size:12px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      opacity:.95;
+    }
+
+    .bootBar{
+      height:14px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      overflow:hidden;
+      margin-top:8px;
+      background:rgba(0,0,0,.55);
+    }
+
+    .bootFill{
+      height:100%;
+      width:0%;
+      background:var(--fg);
+      box-shadow:0 0 18px rgba(124,255,155,.25);
+      transition:width .12s linear;
+    }
+
+    /* Portrait blocker */
+    @media (orientation:portrait){
+      body::before{
+        content:"Rotate device to landscape";
+        position:fixed; inset:0;
+        background:#000;
+        color:var(--fg);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        letter-spacing:.2em;
+        text-transform:uppercase;
+        z-index:99;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="screen scanlines">
+    <div class="tabs">
+      <div class="tab active">STAT</div>
+      <div class="tab">INV</div>
+      <div class="tab">DATA</div>
+      <div class="tab">MAP</div>
+      <div class="tab">RADIO</div>
+    </div>
+
+    <div class="content">
+      <div class="statGrid">
+        <div class="panel">
+          <div class="miniClock" id="miniClock">--:--</div>
+          <div class="silhouette">
+            <div class="silhouetteBox" aria-label="Vault-Tec silhouette placeholder"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="meters">
+            <div>
+              <div class="meterTitle"><span>HP</span><span id="hpVal">075</span></div>
+              <div class="bar"><div class="fill" id="hpFill" style="width:75%"></div></div>
+            </div>
+
+            <div>
+              <div class="meterTitle"><span>AP</span><span id="apVal">060</span></div>
+              <div class="bar"><div class="fill" id="apFill" style="width:60%"></div></div>
+            </div>
+
+            <div>
+              <div class="meterTitle"><span>RADS</span><span id="radVal">008</span></div>
+              <div class="bar"><div class="fill" id="radFill" style="width:8%"></div></div>
+            </div>
+
+            <div style="flex:1"></div>
+            <div class="footerLine">STATUS: NOMINAL</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOOT overlay -->
+    <div class="boot" id="boot">
+      <div class="bootHeader">
+        <div>VAULT-TEC INDUSTRIES</div>
+        <div style="opacity:.7; font-size:12px; letter-spacing:.18em;">Tap to skip</div>
+      </div>
+
+      <div class="bootLog" id="bootLog"></div>
+
+      <div class="bootProgress">
+        <div class="bootProgressTop">
+          <div>PIP-BOY OS DIAGNOSTIC</div>
+          <div><span id="bootPct">0</span>%</div>
+        </div>
+        <div class="bootBar"><div class="bootFill" id="bootFill"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Helpers ---
+    function pad2(n){ return String(n).padStart(2,'0'); }
+
+    // --- Grab elements safely ---
+    const miniClockEl = document.getElementById("miniClock");
+    const hpFill = document.getElementById("hpFill");
+    const apFill = document.getElementById("apFill");
+    const radFill = document.getElementById("radFill");
+    const hpVal = document.getElementById("hpVal");
+    const apVal = document.getElementById("apVal");
+    const radVal = document.getElementById("radVal");
+
+    const bootEl = document.getElementById("boot");
+    const bootLog = document.getElementById("bootLog");
+    const bootPctEl = document.getElementById("bootPct");
+    const bootFillEl = document.getElementById("bootFill");
+
+    // --- STAT mini clock ---
+    function updateClock(){
+      const d = new Date();
+      if (miniClockEl) miniClockEl.textContent = pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // --- Boot sequence (show-accurate vibe) ---
+    const BOOT_LINES = [
+      "PIP-BOY 3000 OS V2.1",
+      "INITIALIZING UI CORE ......... OK",
+      "MEMORY CHECK ................ OK",
+      "SENSOR ARRAY ............... OK",
+      "RAD COUNTER ................. CAL",
+      "MAP MODULE .................. OK",
+      "DATA INTEGRITY .............. OK",
+      "AUDIO BUS ................... OK",
+      "POWER CELL STATUS ........... NOMINAL",
+      "VAULT-TEC AUTH .............. VERIFIED",
+      "LOADING STAT MODULE ......... OK",
+      "LOADING INV MODULE .......... OK",
+      "LOADING DATA MODULE ......... OK",
+      "LOADING MAP MODULE .......... OK",
+      "LOADING RADIO MODULE ........ OK",
+      "SYSTEM READY"
+    ];
+
+    let pct = 0;
+    let lineIndex = 0;
+    let bootDone = false;
+
+    function appendBootLine(text){
+      if (!bootLog) return;
+      bootLog.innerHTML += text + "<br>";
+      // keep it from overflowing forever
+      const lines = bootLog.innerHTML.split("<br>");
+      if (lines.length > 18) {
+        bootLog.innerHTML = lines.slice(lines.length - 18).join("<br>");
+      }
+    }
+
+    function finishBoot(){
+      if (bootDone) return;
+      bootDone = true;
+      if (!bootEl) return;
+      bootEl.style.transition = "opacity 220ms ease";
+      bootEl.style.opacity = "0";
+      setTimeout(() => { try { bootEl.remove(); } catch(e){} }, 240);
+    }
+
+    // Tap anywhere to skip boot
+    document.addEventListener("pointerdown", finishBoot, { passive:true, once:false });
+
+    const bootTimer = setInterval(() => {
+      if (bootDone) { clearInterval(bootTimer); return; }
+
+      pct += Math.floor(2 + Math.random() * 6);
+      if (pct > 100) pct = 100;
+
+      if (bootPctEl) bootPctEl.textContent = pct;
+      if (bootFillEl) bootFillEl.style.width = pct + "%";
+
+      // Add lines as it progresses
+      const threshold = lineIndex * (100 / (BOOT_LINES.length - 1));
+      if (pct >= threshold && lineIndex < BOOT_LINES.length) {
+        appendBootLine(BOOT_LINES[lineIndex]);
+        lineIndex++;
+      }
+
+      if (pct >= 100) {
+        appendBootLine("ENTERING OPERATIONAL MODE");
+        setTimeout(finishBoot, 250);
+      }
+    }, 90);
+
+    // --- Gentle meter drift (pure vibe) ---
+    function drift(fillEl, valEl, base, range){
+      const t = Date.now() / 1000;
+      const v = base + Math.sin(t/6 + Math.random()) * range;
+      const clamped = Math.max(0, Math.min(100, v));
+      if (fillEl) fillEl.style.width = clamped.toFixed(0) + "%";
+      if (valEl) valEl.textContent = String(Math.round(clamped)).padStart(3,'0');
+    }
+
+    setInterval(() => {
+      drift(hpFill, hpVal, 75, 3);
+      drift(apFill, apVal, 60, 4);
+      drift(radFill, radVal, 8, 2);
+    }, 900);
+
+    // --- Service worker registration (helps Chrome offer true \"Install app\") ---
+    window.addEventListener("load", () => {
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      }
+    });
+  </script>
+</body>
+</html>
