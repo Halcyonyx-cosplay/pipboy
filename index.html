@@ -5,15 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#000000" />
   <title>Pip-Boy</title>
- <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-
 
   <link rel="manifest" href="manifest.json">
 
   <style>
-/* MAP PAGE */
+.safe-frame{
+  position:absolute;
+
+  top: 3mm;
+  bottom: 3mm;
+  left: 3mm;
+
+  right: 45mm; /* bezel eats the right side */
+
+  box-sizing: border-box;
+}
+
 /* MAP page */
 .mapGrid{
   height:100%;
@@ -370,6 +377,7 @@
       width:100%;
       padding:14px 10px 10px;
       border-bottom:1px solid var(--line);
+      margin-top: 1.5mm;
 
       letter-spacing:.20em;
       font-size:20px;
@@ -865,7 +873,7 @@
 
 <body>
 <div class="screen scanlines">
-
+ <div class="safe-frame">
   <div class="tabs">
     <div class="tab active" data-page="stat">STAT</div>
     <div class="tab" data-page="inv">INV</div>
@@ -1355,4 +1363,3 @@ if (firstSelected) selectInvItem(firstSelected);
 </script>
 </body>
 </html>
-
