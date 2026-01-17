@@ -1,8 +1,8 @@
 {
   "name": "Pip-Boy",
   "short_name": "Pip-Boy",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "/pipboy/",
+  "scope": "/pipboy/",
   "display": "standalone",
   "orientation": "landscape",
   "background_color": "#000000",
@@ -12,3 +12,4 @@
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
+
