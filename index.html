@@ -6,37 +6,322 @@
   <meta name="theme-color" content="#000000" />
   <title>Pip-Boy</title>
 
-  <!-- PWA manifest -->
   <link rel="manifest" href="manifest.json">
 
   <style>
-    :root{
+/* MAP PAGE */
+/* MAP page */
+.mapGrid{
+  height:100%;
+  border:1px solid var(--line);
+  background:rgba(124,255,155,.03);
+  display:grid;
+  grid-template-rows:auto 1fr auto;
+}
+.mapImage{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;        /* fills screen */
+  opacity:.85;             /* Pip-Boy translucency */
+  filter:
+    grayscale(1)
+    contrast(1.15)
+    brightness(.95)
+    drop-shadow(0 0 12px rgba(57,255,20,.25));
+  pointer-events:none;
+}
+
+.mapHeader{
+  display:flex;
+  justify-content:space-between;
+  padding:14px 16px;
+  border-bottom:1px solid var(--line);
+  letter-spacing:.28em;
+  text-transform:uppercase;
+}
+.mapHint{ opacity:.6; }
+
+.mapFrame{
+  padding:16px;
+  box-sizing:border-box;
+  height:100%;
+}
+
+.mapScreen{
+  height:100%;
+  border:1px solid var(--line);
+  background:
+    /* faint grid */
+    linear-gradient(to right, rgba(182,255,204,.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(182,255,204,.08) 1px, transparent 1px),
+    radial-gradient(140px 140px at 50% 40%, rgba(57,255,20,.10), transparent 65%),
+    rgba(0,0,0,.35);
+  background-size: 28px 28px, 28px 28px, auto, auto;
+  position:relative;
+  overflow:hidden;
+  cursor:crosshair;
+}
+
+/* subtle “map lines” */
+.mapScreen::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 22px,
+      rgba(57,255,20,.06) 23px,
+      transparent 24px
+    );
+  pointer-events:none;
+  opacity:.6;
+}
+
+.mapOverlay{
+  position:absolute;
+  top:12px;
+  left:12px;
+  border:1px solid rgba(182,255,204,.18);
+  background:rgba(0,0,0,.35);
+  padding:10px 12px;
+  width:min(320px, 70%);
+  box-sizing:border-box;
+}
+
+.mapHudRow{
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  padding:6px 0;
+  border-bottom:1px solid rgba(182,255,204,.10);
+}
+.mapHudRow:last-child{ border-bottom:none; }
+
+.mapMarker{
+  position:absolute;
+  transform:translate(-50%, -50%);
+  pointer-events:none;
+}
+
+.mapDot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:var(--fg);
+  box-shadow:0 0 10px rgba(57,255,20,.45);
+}
+
+.mapRing{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:42px;
+  height:42px;
+  border:1px solid rgba(57,255,20,.7);
+  border-radius:50%;
+  transform:translate(-50%, -50%);
+  animation: mapPing 1.4s ease-out infinite;
+  opacity:.8;
+}
+
+@keyframes mapPing{
+  0%{ transform:translate(-50%, -50%) scale(.35); opacity:.85; }
+  100%{ transform:translate(-50%, -50%) scale(1.2); opacity:0; }
+}
+
+.mapFooter{
+  border-top:1px solid var(--line);
+  padding:12px 16px 14px;
+  background:rgba(0,0,0,.20);
+}
+
+.mapFooterRow{
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  padding:6px 0;
+  opacity:.9;
+}
+
+
+/* DATA page */
+.dataGrid{
+  height:100%;
+  border:1px solid var(--line);
+  background:rgba(124,255,155,.03);
+  display:grid;
+  grid-template-rows:auto 1fr;
+}
+.blinkColon{
+  display:inline-block;
+  width:0.6em;
+  text-align:center;
+  animation: blink 1s steps(2, end) infinite;
+}
+
+@keyframes blink{
+  0%, 49% { opacity:1; }
+  50%, 100% { opacity:0.15; }
+}
+.dataPanel{
+  width:min(520px, 92%);
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.35);
+  padding:14px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.dataRow{
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  opacity:.9;
+}
+
+.dataSubtabs{
+  display:flex;
+  justify-content:space-evenly;
+  align-items:center;
+  padding:12px 10px 10px;
+  border-bottom:1px solid var(--line);
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  font-size:16px;
+}
+
+.subtab{
+  opacity:.7;
+  padding-bottom:6px;
+  font-weight:900;
+  cursor:pointer;
+  text-shadow:
+    0 0 1px var(--fg),
+    0 0 2px var(--fg),
+    0 0 6px var(--shadow);
+}
+/* Make sure DATA subtabs can always be clicked */
+.dataGrid, .dataSubtabs, .subtab, .dataBody, .dataSection{
+  pointer-events:auto;
+}
+
+.dataSubtabs{
+  position:relative;
+  z-index:20;
+}
+
+.subtab.active{
+  opacity:1;
+  border-bottom:2px solid var(--fg);
+  text-shadow:
+    0 0 2px var(--fg),
+    0 0 4px var(--fg),
+    0 0 10px var(--shadow);
+}
+
+.dataBody{
+  height:100%;
+  padding:18px;
+  box-sizing:border-box;
+}
+
+.dataSection{ display:none; height:100%; }
+.dataSection.active{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; }
+
+.bigClock{
+  font-size:82px;
+  font-weight:900;
+  letter-spacing:.20em;
+  text-align:center;
+  text-shadow:
+    0 0 3px rgba(57,255,20,.35),
+    0 0 10px rgba(57,255,20,.20);
+}
+
+.bigDate{
+  font-size:24px;
+  font-weight:800;
+  letter-spacing:.26em;
+  opacity:.8;
+  text-align:center;
+  text-shadow: 0 0 6px rgba(57,255,20,.18);
+}
+
+.dataSmallReadouts{
+  margin-top:10px;
+  width:min(520px, 92%);
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.35);
+  padding:12px 14px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.dataSmallReadouts > div{
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  opacity:.9;
+}
+
+
+.invGrid, .invListWrap, .invList, .invItem{
+  pointer-events:auto;
+}
+    
+:root{
       --bg:#000000;
-      --fg:#7CFF9B;   /* bright neon green */
+
+      /* Brighter neon greens */
+      --fg:#39FF14;
       --fg2:#B6FFCC;
-      --line:rgba(182,255,204,.18);
-      --shadow:rgba(124,255,155,.25);
+
+      /* Keep your lines subtle but a touch brighter */
+      --line:rgba(182,255,204,.22);
+
+      /* Stronger “screen glow” */
+      --shadow:rgba(57,255,20,.55);
     }
 
-    html,body{ height:100%; margin:0; background:#000; }
+    html,body{
+      height:100%;
+      margin:0;
+      background:#000;
+    }
+
     body{
       overflow:hidden;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
       color:var(--fg);
-      user-select:none;
-      -webkit-user-select:none;
     }
 
     .screen{
       height:100%;
       background:#000; /* SOLID BLACK */
       position:relative;
+      user-select:none;
+      -webkit-user-select:none;
     }
 
     /* CRT scanlines */
     .scanlines::before{
       content:"";
-      position:absolute; inset:0;
+      position:absolute;
+      inset:0;
       background: repeating-linear-gradient(
         to bottom,
         rgba(0,0,0,.35) 0px,
@@ -45,17 +330,23 @@
         rgba(0,0,0,0) 6px
       );
       pointer-events:none;
-      opacity:.72;
+      opacity:.7;
     }
 
     /* Moving sweep */
     .scanlines::after{
       content:"";
-      position:absolute; inset:-30% 0;
-      background: linear-gradient(to bottom, transparent, rgba(124,255,155,.12), transparent);
+      position:absolute;
+      inset:-30% 0;
+      background: linear-gradient(
+        to bottom,
+        transparent,
+        rgba(124,255,155,.12),
+        transparent
+      );
       animation:sweep 4.5s linear infinite;
       pointer-events:none;
-      opacity:.62;
+      opacity:.6;
     }
 
     @keyframes sweep{
@@ -63,22 +354,96 @@
       to{ transform:translateY(60%); }
     }
 
-    /* Top tabs (Phase 1: visual only) */
+    .scanlines, .scanlines::before, .scanlines::after{
+      pointer-events:none;
+    }
+
+    /* Tabs */
     .tabs{
       display:flex;
-      gap:18px;
-      padding:14px 18px 10px;
+      justify-content:space-evenly; /* spreads STAT/INV/DATA/MAP/RADIO evenly */
+      align-items:center;
+      width:100%;
+      padding:14px 10px 10px;
       border-bottom:1px solid var(--line);
-      letter-spacing:.28em;
-      font-size:14px;
+
+      letter-spacing:.20em;
+      font-size:20px;
       text-transform:uppercase;
     }
-    .tab{ opacity:.6; padding-bottom:6px; }
+
+    .tab{
+      opacity:.75;
+      padding-bottom:6px;
+      font-weight:900;
+      letter-spacing:.20em;
+      cursor:pointer;
+
+      /* FAKE THICKNESS */
+      text-shadow:
+        0 0 1px var(--fg),
+        0 0 2px var(--fg),
+        0 0 6px var(--shadow);
+    }
+
     .tab.active{
       opacity:1;
       border-bottom:2px solid var(--fg);
-      text-shadow:0 0 14px var(--shadow);
+      text-shadow:
+        0 0 2px var(--fg),
+        0 0 4px var(--fg),
+        0 0 10px var(--shadow);
     }
+/* Blinking selection cursor around the active TOP tab */
+.tab{
+  position:relative;
+}
+
+.tab.active::before,
+.tab.active::after{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  font-weight:900;
+  font-size:20px;
+  letter-spacing:0;
+  opacity:1;
+  pointer-events:none;
+
+  /* crisp but not too glowy */
+  text-shadow:
+    0 0 2px var(--fg),
+    0 0 8px rgba(57,255,20,.25);
+
+  animation: tabBlink 1s steps(2, end) infinite;
+}
+
+.tab.active::before{
+  content:"[";
+  left:-18px;
+}
+
+.tab.active::after{
+  content:"]";
+  right:-18px;
+}
+
+@keyframes tabBlink{
+  0%,49%{ opacity:1; }
+  50%,100%{ opacity:.15; }
+}
+
+.tabs{
+  position:relative;
+  z-index:1000;     /* force above overlays */
+  pointer-events:auto;
+.tabs{ padding-left:22px; padding-right:22px; }
+
+}
+
+.tab{
+  pointer-events:auto;
+}
 
     .content{
       padding:18px;
@@ -86,6 +451,11 @@
       box-sizing:border-box;
     }
 
+    /* Pages */
+    .page{ display:none; height:100%; }
+    .page.active{ display:block; }
+
+    /* STAT layout */
     .statGrid{
       display:grid;
       grid-template-columns:1.1fr 1fr;
@@ -98,74 +468,173 @@
       padding:16px;
       border-right:1px solid var(--line);
       position:relative;
-      box-sizing:border-box;
-    }
-    .panel:last-child{ border-right:none; }
-
-    /* STAT small clock */
-    .miniClock{
-      position:absolute;
-      top:12px;
-      right:16px;
-      font-size:14px;
-      letter-spacing:.22em;
-      text-shadow:0 0 14px var(--shadow);
-      opacity:.95;
     }
 
-    /* Silhouette placeholder */
+    .panel:last-child{
+      border-right:none;
+    }
+
     .silhouette{
       height:100%;
       display:flex;
       align-items:center;
       justify-content:center;
     }
+
     .silhouetteBox{
       width:80%;
       aspect-ratio:3/4;
       border:1px solid var(--line);
       background:
-        radial-gradient(120px 120px at 50% 30%, rgba(124,255,155,.12), transparent 65%);
+        radial-gradient(
+          120px 120px at 50% 30%,
+          rgba(124,255,155,.12),
+          transparent 65%
+        );
       box-shadow:0 0 24px rgba(124,255,155,.15);
       position:relative;
+      overflow:hidden;
     }
+
     .silhouetteBox::after{
       content:"VAULT-TEC";
       position:absolute;
-      bottom:10px; left:10px;
+      bottom:10px;
+      left:10px;
       font-size:12px;
       letter-spacing:.25em;
       opacity:.7;
     }
 
-    /* Meters */
+    .statGif{
+      position:absolute;
+
+      /* size: ~20% smaller */
+      width:72%;
+      height:72%;
+
+      /* center horizontally, lift vertically */
+      left:50%;
+      top:44%;
+      transform:translate(-50%, -50%);
+
+      object-fit:contain;
+      pointer-events:none;
+
+      /* Pip-Boy glow */
+      filter: drop-shadow(0 0 14px rgba(57,255,20,.35));
+    }
+
+    .statClock{
+      position:absolute;
+      left:50%;
+      top:6%;
+      transform:translateX(-50%);
+
+      font-size:36px;
+      letter-spacing:.22em;
+      font-weight:800;
+
+      color: var(--fg);
+      pointer-events:none;
+
+      text-shadow:
+        0 0 4px rgba(57,255,20,.35),
+        0 0 8px rgba(57,255,20,.25);
+    }
+
+    .statSub{
+      margin-top:6px;
+      font-size:17px;
+      letter-spacing:.24em;
+      text-align:center;
+      width:100%;
+      opacity:.75;
+      font-weight:700;
+      pointer-events:none;
+      text-shadow: 0 0 6px rgba(57,255,20,.25);
+    }
+
+    /* Limb overlay (now correctly anchored INSIDE silhouetteBox) */
+    .limbOverlay{
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+    }
+
+    .limb{
+      position:absolute;
+      font-size:14px;
+      letter-spacing:.12em;
+      font-weight:800;
+      text-shadow:
+        0 0 4px rgba(57,255,20,.30),
+        0 0 10px rgba(57,255,20,.18);
+      opacity:.9;
+    }
+
+    .limb.head  { left:50.5%; top:20%; transform:translate(-50%,-50%); }
+    .limb.torso { left:50.5%; top:69%; transform:translate(-50%,-50%); }
+    .limb.armL  { left:21%; top:38%; transform:translate(-50%,-50%); }
+    .limb.armR  { left:79%; top:38%; transform:translate(-50%,-50%); }
+    .limb.legL  { left:21%; top:57%; transform:translate(-50%,-50%); }
+    .limb.legR  { left:79%; top:57%; transform:translate(-50%,-50%); }
+
     .meters{
       display:flex;
       flex-direction:column;
       gap:14px;
       height:100%;
     }
+
     .meterTitle{
       display:flex;
       justify-content:space-between;
       font-size:12px;
       letter-spacing:.22em;
       text-transform:uppercase;
-      opacity:.95;
     }
+
     .bar{
       height:14px;
       border:1px solid var(--line);
       border-radius:999px;
       overflow:hidden;
-      background:rgba(0,0,0,.55);
+      background:rgba(0,0,0,.5);
     }
+
     .fill{
       height:100%;
       background:var(--fg);
       box-shadow:0 0 18px rgba(124,255,155,.3);
       transition:width .8s ease;
     }
+
+    #radFill{
+      animation: radPulse 1.4s ease-in-out infinite;
+    }
+    @keyframes radPulse{
+      0%,100%{ filter: brightness(1); }
+      50%{ filter: brightness(1.15); }
+    }
+
+    .readouts{
+      margin-top:10px;
+      border:1px solid var(--line);
+      padding:10px 12px;
+      background: rgba(0,0,0,.35);
+    }
+
+    .readoutRow{
+      display:flex;
+      justify-content:space-between;
+      font-size:12px;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      padding:6px 0;
+      border-bottom:1px solid rgba(182,255,204,.10);
+    }
+    .readoutRow:last-child{ border-bottom:none; }
 
     .footerLine{
       position:absolute;
@@ -174,83 +643,209 @@
       font-size:12px;
       letter-spacing:.22em;
       text-transform:uppercase;
-      opacity:.9;
     }
 
-    /* Boot overlay */
+    /* INV page */
+    .invGrid{
+      height:100%;
+      display:grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      border:1px solid var(--line);
+      background:rgba(124,255,155,.03);
+    }
+
+    .invListWrap{
+      border-right:1px solid var(--line);
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+
+    .invHeader{
+      display:flex;
+      justify-content:space-between;
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      letter-spacing:.28em;
+      text-transform:uppercase;
+    }
+    .invHint{ opacity:.6; }
+
+    .invList{
+      padding:10px 10px 6px;
+      overflow:auto;
+      min-height:0;
+    }
+
+    .invItem{
+      display:flex;
+      justify-content:space-between;
+      padding:10px 12px;
+      border:1px solid rgba(182,255,204,.10);
+      background:rgba(0,0,0,.25);
+      margin-bottom:8px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      opacity:.85;
+      cursor:pointer;
+    }
+
+    .invItem.selected{
+      opacity:1;
+      border-color: var(--fg);
+      box-shadow: 0 0 12px rgba(57,255,20,.18);
+    }
+/* Pip-Boy style selection brackets */
+.invItem{
+  position:relative; /* so ::before/::after can anchor */
+}
+
+.invItem.selected::before,
+.invItem.selected::after{
+  position:absolute;
+  top:50%;
+  transform:translateY(-50%);
+  font-weight:900;
+  font-size:18px;
+  letter-spacing:0;
+  opacity:1;
+  text-shadow:
+    0 0 2px var(--fg),
+    0 0 8px var(--shadow);
+  pointer-events:none;
+}
+
+.invItem.selected::before{
+  content:"[";
+  left:8px;
+}
+
+.invItem.selected::after{
+  content:"]";
+  right:8px;
+}
+
+/* give selected row a little extra padding so brackets don't overlap text */
+.invItem.selected{
+  padding-left:22px;
+  padding-right:22px;
+}
+
+    .invDetail{
+      padding:14px 16px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      min-height:0;
+    }
+
+    .invTitle{
+      letter-spacing:.28em;
+      text-transform:uppercase;
+      font-size:16px;
+    }
+
+    .invDesc{
+      opacity:.75;
+      letter-spacing:.10em;
+      line-height:1.4;
+    }
+
+    .invStats{
+      display:flex;
+      gap:18px;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      font-size:12px;
+      flex-wrap:wrap;
+    }
+
+    .invStats > div{
+      display:flex;
+      gap:10px;
+    }
+
+    .placeholder{
+      height:100%;
+      border:1px solid var(--line);
+      background:rgba(124,255,155,.03);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      letter-spacing:.22em;
+      text-transform:uppercase;
+      opacity:.8;
+    }
+
+    /* Boot screen */
     .boot{
-      position:absolute; inset:0;
+      position:absolute;
+      inset:0;
       background:#000;
       display:flex;
       flex-direction:column;
       gap:14px;
       padding:18px;
       z-index:10;
-      box-sizing:border-box;
     }
 
     .bootHeader{
       display:flex;
       justify-content:space-between;
-      align-items:flex-end;
       border-bottom:1px solid var(--line);
       padding-bottom:10px;
-      letter-spacing:.28em;
+      letter-spacing:.32em;
       font-size:14px;
       text-transform:uppercase;
+      text-shadow:0 0 10px var(--shadow);
     }
 
     .bootLog{
       flex:1;
       border:1px solid var(--line);
-      padding:14px;
-      background:rgba(124,255,155,.02);
-      font-size:12px;
-      letter-spacing:.18em;
+      padding:16px 18px;
+      font-size:13px;
+      letter-spacing:.28em;
       text-transform:uppercase;
-      overflow:hidden;
+      width:100%;
       box-sizing:border-box;
+
+      overflow:auto;         /* IMPORTANT: allow scrolling */
+      white-space:nowrap;    /* keep that wide terminal feel */
     }
 
     .bootProgress{
       border:1px solid var(--line);
-      padding:10px 12px;
-      background:rgba(124,255,155,.02);
-      box-sizing:border-box;
-    }
-
-    .bootProgressTop{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      font-size:12px;
-      letter-spacing:.18em;
-      text-transform:uppercase;
-      opacity:.95;
+      padding:10px;
     }
 
     .bootBar{
       height:14px;
       border:1px solid var(--line);
       border-radius:999px;
-      overflow:hidden;
-      margin-top:8px;
-      background:rgba(0,0,0,.55);
+      overflow:hidden;       /* progress bar should hide overflow */
+      margin-top:6px;
     }
 
     .bootFill{
       height:100%;
       width:0%;
-      background:var(--fg);
-      box-shadow:0 0 18px rgba(124,255,155,.25);
+      background:
+        repeating-linear-gradient(
+          to right,
+          var(--fg),
+          var(--fg) 8px,
+          rgba(0,0,0,.2) 8px,
+          rgba(0,0,0,.2) 12px
+        );
       transition:width .12s linear;
     }
 
-    /* Portrait blocker */
     @media (orientation:portrait){
       body::before{
         content:"Rotate device to landscape";
-        position:fixed; inset:0;
+        position:fixed;
+        inset:0;
         background:#000;
         color:var(--fg);
         display:flex;
@@ -265,182 +860,494 @@
 </head>
 
 <body>
-  <div class="screen scanlines">
-    <div class="tabs">
-      <div class="tab active">STAT</div>
-      <div class="tab">INV</div>
-      <div class="tab">DATA</div>
-      <div class="tab">MAP</div>
-      <div class="tab">RADIO</div>
-    </div>
+<div class="screen scanlines">
 
-    <div class="content">
+  <div class="tabs">
+    <div class="tab active" data-page="stat">STAT</div>
+    <div class="tab" data-page="inv">INV</div>
+    <div class="tab" data-page="data">DATA</div>
+    <div class="tab" data-page="map">MAP</div>
+    <div class="tab" data-page="radio">RADIO</div>
+  </div>
+
+  <div class="content">
+
+    <!-- STAT PAGE -->
+    <div class="page active" id="page-stat">
       <div class="statGrid">
         <div class="panel">
-          <div class="miniClock" id="miniClock">--:--</div>
           <div class="silhouette">
-            <div class="silhouetteBox" aria-label="Vault-Tec silhouette placeholder"></div>
+            <div class="silhouetteBox">
+              <div class="statClock">
+                <div id="miniClock"></div>
+                <div class="statSub" id="miniDate"></div>
+              </div>
+
+              <img class="statGif" src="Stat.gif" alt="">
+
+              <div class="limbOverlay" aria-hidden="true">
+                <span class="limb head"  id="limbHead">100</span>
+                <span class="limb armL"  id="limbArmL">100</span>
+                <span class="limb armR"  id="limbArmR">100</span>
+                <span class="limb torso" id="limbTorso">100</span>
+                <span class="limb legL"  id="limbLegL">100</span>
+                <span class="limb legR"  id="limbLegR">100</span>
+              </div>
+            </div>
           </div>
         </div>
 
         <div class="panel">
           <div class="meters">
             <div>
-              <div class="meterTitle"><span>HP</span><span id="hpVal">075</span></div>
-              <div class="bar"><div class="fill" id="hpFill" style="width:75%"></div></div>
+              <div class="meterTitle"><span>HP</span><span id="hpVal">98</span></div>
+              <div class="bar"><div class="fill" id="hpFill" style="width:98%"></div></div>
             </div>
-
             <div>
               <div class="meterTitle"><span>AP</span><span id="apVal">060</span></div>
               <div class="bar"><div class="fill" id="apFill" style="width:60%"></div></div>
             </div>
-
             <div>
               <div class="meterTitle"><span>RADS</span><span id="radVal">008</span></div>
-              <div class="bar"><div class="fill" id="radFill" style="width:8%"></div></div>
+              <div class="bar"><div class="fill" id="radFill" style="width:12%"></div></div>
+            </div>
+
+            <div class="readouts">
+              <div class="readoutRow"><span>CND</span><span id="cndVal">100%</span></div>
+              <div class="readoutRow"><span>EFFECTS</span><span id="fxVal">NONE</span></div>
+              <div class="readoutRow"><span>DIAG</span><span id="diagVal">STABLE</span></div>
             </div>
 
             <div style="flex:1"></div>
-            <div class="footerLine">STATUS: NOMINAL</div>
+            <div class="footerLine" id="statusLine">STATUS: NOMINAL</div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- BOOT overlay -->
-    <div class="boot" id="boot">
-      <div class="bootHeader">
-        <div>VAULT-TEC INDUSTRIES</div>
-        <div style="opacity:.7; font-size:12px; letter-spacing:.18em;">Tap to skip</div>
-      </div>
+    <!-- INV PAGE -->
+    <div class="page" id="page-inv">
+      <div class="invGrid">
+        <div class="invListWrap">
+          <div class="invHeader">
+            <div>INVENTORY</div>
+            <div class="invHint">TAP ITEM</div>
+          </div>
 
-      <div class="bootLog" id="bootLog"></div>
+          <div class="invList" id="invList">
+  <div class="invItem selected" data-item="STIMPAK"><span>STIMPAK</span><span>x03</span></div>
+  <div class="invItem" data-item="RADAWAY"><span>RADAWAY</span><span>x01</span></div>
+  <div class="invItem" data-item="10MM ROUNDS"><span>10MM ROUNDS</span><span>x48</span></div>
+  <div class="invItem" data-item="WATER"><span>WATER</span><span>x02</span></div>
+  <div class="invItem" data-item="SUGAR BOMBS"><span>SUGAR BOMBS</span><span>x01</span></div>
+  <div class="invItem" data-item="VAULT SUIT"><span>VAULT SUIT</span><span>CND 100%</span></div>
+  <div class="invItem" data-item="PIPE PISTOL"><span>PIPE PISTOL</span><span>CND 72%</span></div>
+  <div class="invItem" data-item="BOBBY PIN"><span>BOBBY PIN</span><span>x12</span></div>
+</div>
 
-      <div class="bootProgress">
-        <div class="bootProgressTop">
-          <div>PIP-BOY OS DIAGNOSTIC</div>
-          <div><span id="bootPct">0</span>%</div>
         </div>
-        <div class="bootBar"><div class="bootFill" id="bootFill"></div></div>
+
+        <div class="invDetail">
+          <div class="invTitle" id="invTitle">STIMPAK</div>
+          <div class="invDesc" id="invDesc">Restores a small amount of health.</div>
+          <div class="invStats">
+            <div><span>WT</span><span id="invWt">0.1</span></div>
+            <div><span>VAL</span><span id="invVal">50</span></div>
+            <div><span>EFF</span><span id="invEff">HP +</span></div>
+          </div>
+        </div>
       </div>
+    </div>
+
+    <!-- Placeholder pages so tabs don't feel dead -->
+   <div class="page" id="page-data">
+  <div class="dataGrid">
+    <div class="dataSubtabs">
+      <div class="subtab active" data-dsub="clock">CLOCK</div>
+      <div class="subtab" data-dsub="stats">STATS</div>
+      <div class="subtab" data-dsub="maint">MAINT</div>
+    </div>
+
+    <div class="dataBody">
+      <!-- CLOCK -->
+      <div class="dataSection active" id="d-clock">
+        <div class="bigClock" id="dataClock">
+  <span id="dataHH">00</span><span class="blinkColon">:</span><span id="dataMM">00</span>
+</div>
+
+        <div class="bigDate" id="dataDate">00.00.0000</div>
+
+        <div class="dataSmallReadouts">
+          <div><span>ZONE</span><span>LOCAL</span></div>
+          <div><span>SYNC</span><span>NOMINAL</span></div>
+          <div><span>UPTIME</span><span id="dataUptime">00:00:00</span></div>
+        </div>
+      </div>
+
+      <!-- STATS placeholder -->
+      <div class="dataSection" id="d-stats">
+  <div class="dataPanel">
+    <div class="dataRow"><span>SYSTEM VERSION</span><span>PIP-BOY OS 2.1</span></div>
+    <div class="dataRow"><span>BUILD</span><span>ROBCO-VAULT</span></div>
+    <div class="dataRow"><span>MEMORY</span><span>OK</span></div>
+    <div class="dataRow"><span>STORAGE</span><span>NOMINAL</span></div>
+    <div class="dataRow"><span>UPTIME</span><span id="dataUptimeStatic">ACTIVE</span></div>
+    <div class="dataRow"><span>STATUS</span><span>STABLE</span></div>
+  </div>
+</div>
+
+
+      <!-- MAINT placeholder -->
+      <div class="dataSection" id="d-maint">
+  <div class="dataPanel">
+    <div class="dataRow"><span>SELF-TEST</span><span>PASS</span></div>
+    <div class="dataRow"><span>LAST SERVICE</span><span>OK</span></div>
+    <div class="dataRow"><span>POWER CELL</span><span>NOMINAL</span></div>
+    <div class="dataRow"><span>THERMAL</span><span>NORMAL</span></div>
+    <div class="dataRow"><span>RAD MODULE</span><span>CALIBRATED</span></div>
+    <div class="dataRow"><span>DIAGNOSTICS</span><span>CLEAR</span></div>
+  </div>
+</div>
+
+    </div>
+  </div>
+</div>
+
+   <div class="page" id="page-map">
+  <div class="mapGrid">
+    <div class="mapHeader">
+      <div>LOCAL MAP</div>
+      <div class="mapHint">TAP TO SET MARKER</div>
+    </div>
+
+    <div class="mapFrame">
+      <div class="mapScreen" id="mapScreen">
+<img src="map.png" class="mapImage" alt="Map">
+        <div class="mapOverlay">
+          <div class="mapHudRow">
+            <div>COORD</div><div id="mapCoord">X 00.0  Y 00.0</div>
+          </div>
+          <div class="mapHudRow">
+            <div>HDG</div><div id="mapHdg">090° E</div>
+          </div>
+          <div class="mapHudRow">
+            <div>SIGNAL</div><div id="mapSig">LOCKED</div>
+          </div>
+        </div>
+
+        <!-- Marker -->
+        <div class="mapMarker" id="mapMarker" style="left:52%; top:48%;">
+          <div class="mapDot"></div>
+          <div class="mapRing"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mapFooter">
+      <div class="mapFooterRow"><span>SCAN MODE</span><span>PASSIVE</span></div>
+      <div class="mapFooterRow"><span>RANGE</span><span>LOCAL</span></div>
+      <div class="mapFooterRow"><span>NOTES</span><span>VAULT-TEC SURVEY</span></div>
+    </div>
+  </div>
+</div>
+
+    <div class="page" id="page-radio"><div class="placeholder">RADIO (SOON)</div></div>
+
+  </div>
+
+  <div class="boot" id="boot">
+    <div class="bootHeader">
+      <div>VAULT-TEC INDUSTRIES</div>
+      <div>Tap to skip</div>
+    </div>
+
+    <div class="bootLog" id="bootLog"></div>
+
+    <div class="bootProgress">
+      <div>PIP-BOY OS DIAGNOSTIC <span id="bootPct">0</span>%</div>
+      <div class="bootBar"><div class="bootFill" id="bootFill"></div></div>
     </div>
   </div>
 
-  <script>
-    // --- Helpers ---
-    function pad2(n){ return String(n).padStart(2,'0'); }
+</div>
 
-    // --- Grab elements safely ---
-    const miniClockEl = document.getElementById("miniClock");
-    const hpFill = document.getElementById("hpFill");
-    const apFill = document.getElementById("apFill");
-    const radFill = document.getElementById("radFill");
-    const hpVal = document.getElementById("hpVal");
-    const apVal = document.getElementById("apVal");
-    const radVal = document.getElementById("radVal");
+<script>
 
-    const bootEl = document.getElementById("boot");
-    const bootLog = document.getElementById("bootLog");
-    const bootPctEl = document.getElementById("bootPct");
-    const bootFillEl = document.getElementById("bootFill");
+  // Clock (use element lookup so it never breaks in different browsers)
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function updateClock(){
+  const d = new Date();
+  const hh = pad(d.getHours());
+  const mm = pad(d.getMinutes());
 
-    // --- STAT mini clock ---
-    function updateClock(){
-      const d = new Date();
-      if (miniClockEl) miniClockEl.textContent = pad2(d.getHours()) + ":" + pad2(d.getMinutes());
-    }
-    updateClock();
-    setInterval(updateClock, 1000);
+  // STAT
+  const stat = document.getElementById("miniClock");
+  if (stat) stat.textContent = hh + ":" + mm;
 
-    // --- Boot sequence (show-accurate vibe) ---
-    const BOOT_LINES = [
-      "PIP-BOY 3000 OS V2.1",
-      "INITIALIZING UI CORE ......... OK",
-      "MEMORY CHECK ................ OK",
-      "SENSOR ARRAY ............... OK",
-      "RAD COUNTER ................. CAL",
-      "MAP MODULE .................. OK",
-      "DATA INTEGRITY .............. OK",
-      "AUDIO BUS ................... OK",
-      "POWER CELL STATUS ........... NOMINAL",
-      "VAULT-TEC AUTH .............. VERIFIED",
-      "LOADING STAT MODULE ......... OK",
-      "LOADING INV MODULE .......... OK",
-      "LOADING DATA MODULE ......... OK",
-      "LOADING MAP MODULE .......... OK",
-      "LOADING RADIO MODULE ........ OK",
-      "SYSTEM READY"
-    ];
+  // DATA (blinking colon uses separate spans)
+  const elHH = document.getElementById("dataHH");
+  const elMM = document.getElementById("dataMM");
+  if (elHH) elHH.textContent = hh;
+  if (elMM) elMM.textContent = mm;
+}
 
-    let pct = 0;
-    let lineIndex = 0;
-    let bootDone = false;
 
-    function appendBootLine(text){
-      if (!bootLog) return;
-      bootLog.innerHTML += text + "<br>";
-      // keep it from overflowing forever
-      const lines = bootLog.innerHTML.split("<br>");
-      if (lines.length > 18) {
-        bootLog.innerHTML = lines.slice(lines.length - 18).join("<br>");
-      }
-    }
+  setInterval(updateClock, 1000);
+  updateClock();
 
-    function finishBoot(){
-      if (bootDone) return;
-      bootDone = true;
-      if (!bootEl) return;
-      bootEl.style.transition = "opacity 220ms ease";
-      bootEl.style.opacity = "0";
-      setTimeout(() => { try { bootEl.remove(); } catch(e){} }, 240);
-    }
+  function updateDate(){
+  const d = new Date();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  const yyyy = d.getFullYear();
+  const txt = `${mm}.${dd}.${yyyy}`;
 
-    // Tap anywhere to skip boot
-    document.addEventListener("pointerdown", finishBoot, { passive:true, once:false });
+  const stat = document.getElementById("miniDate");
+  if (stat) stat.textContent = txt;
 
-    const bootTimer = setInterval(() => {
-      if (bootDone) { clearInterval(bootTimer); return; }
+  const big = document.getElementById("dataDate");
+  if (big) big.textContent = txt;
+}
+const appStart = Date.now();
+function updateUptime(){
+  const el = document.getElementById("dataUptime");
+  if (!el) return;
+  const s = Math.floor((Date.now() - appStart)/1000);
+  const hh = String(Math.floor(s/3600)).padStart(2,'0');
+  const mm = String(Math.floor((s%3600)/60)).padStart(2,'0');
+  const ss = String(s%60).padStart(2,'0');
+  el.textContent = `${hh}:${mm}:${ss}`;
+}
+setInterval(updateUptime, 1000);
+updateUptime();
 
-      pct += Math.floor(2 + Math.random() * 6);
-      if (pct > 100) pct = 100;
+  setInterval(updateDate, 60000);
+  updateDate();
 
-      if (bootPctEl) bootPctEl.textContent = pct;
-      if (bootFillEl) bootFillEl.style.width = pct + "%";
+  // Tab/page switching
+  function showPage(key){
+    document.querySelectorAll(".tab").forEach(t=>{
+      t.classList.toggle("active", t.dataset.page === key);
+    });
+    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+    const page = document.getElementById("page-" + key);
+    if(page) page.classList.add("active");
+  }
+  document.querySelectorAll(".tab").forEach(tab=>{
+    tab.addEventListener("click", ()=>{
+      const key = tab.dataset.page;
+      if(key) showPage(key);
+    });
+  });
+  showPage("stat");
+function showDataSub(key){
+  document.querySelectorAll(".subtab").forEach(s=>{
+    s.classList.toggle("active", s.dataset.dsub === key);
+  });
+  document.querySelectorAll(".dataSection").forEach(sec=>sec.classList.remove("active"));
+  const el = document.getElementById("d-" + key);
+  if (el) el.classList.add("active");
+}
 
-      // Add lines as it progresses
-      const threshold = lineIndex * (100 / (BOOT_LINES.length - 1));
-      if (pct >= threshold && lineIndex < BOOT_LINES.length) {
-        appendBootLine(BOOT_LINES[lineIndex]);
-        lineIndex++;
-      }
+document.querySelectorAll(".subtab").forEach(s=>{
+  s.addEventListener("click", ()=> showDataSub(s.dataset.dsub));
+});
 
-      if (pct >= 100) {
-        appendBootLine("ENTERING OPERATIONAL MODE");
-        setTimeout(finishBoot, 250);
-      }
-    }, 90);
+// default DATA submenu
+showDataSub("clock");
 
-    // --- Gentle meter drift (pure vibe) ---
-    function drift(fillEl, valEl, base, range){
-      const t = Date.now() / 1000;
-      const v = base + Math.sin(t/6 + Math.random()) * range;
-      const clamped = Math.max(0, Math.min(100, v));
-      if (fillEl) fillEl.style.width = clamped.toFixed(0) + "%";
-      if (valEl) valEl.textContent = String(Math.round(clamped)).padStart(3,'0');
-    }
+  // INV detail selection
+  const invData = {
+    "STIMPAK": {desc:"Restores a small amount of health.", wt:"0.1", val:"50", eff:"HP +"},
+    "RADAWAY": {desc:"Reduces radiation level.", wt:"0.1", val:"40", eff:"RADS -"},
+    "10MM ROUNDS": {desc:"Standard ammunition.", wt:"0.0", val:"1", eff:"—"},
+    "WATER": {desc:"Purified drinking water.", wt:"0.5", val:"20", eff:"HP +"},
+    "SUGAR BOMBS": {desc:"Pre-war sugary cereal.", wt:"0.3", val:"15", eff:"—"},
+    "VAULT SUIT": {desc:"Standard-issue Vault jumpsuit.", wt:"1.0", val:"60", eff:"DR +"},
+    "PIPE PISTOL": {desc:"Crude but functional sidearm.", wt:"3.5", val:"30", eff:"DMG 18"},
+    "BOBBY PIN": {desc:"Useful for lockpicking.", wt:"0.0", val:"2", eff:"—"},
+  };
+
+  function selectInvItem(el){
+  document.querySelectorAll(".invItem").forEach(i=>i.classList.remove("selected"));
+  el.classList.add("selected");
+
+  const name = (el.dataset.item || "").trim();
+  const d = invData[name] || {desc:"", wt:"—", val:"—", eff:"—"};
+
+  const title = document.getElementById("invTitle");
+  const desc  = document.getElementById("invDesc");
+  const wt    = document.getElementById("invWt");
+  const val   = document.getElementById("invVal");
+  const eff   = document.getElementById("invEff");
+
+  if(title) title.textContent = name;
+  if(desc)  desc.textContent = d.desc;
+  if(wt)    wt.textContent = d.wt;
+  if(val)   val.textContent = d.val;
+  if(eff)   eff.textContent = d.eff;
+}
+const firstSelected = document.querySelector(".invItem.selected") || document.querySelector(".invItem");
+if (firstSelected) selectInvItem(firstSelected);
+
+
+  document.querySelectorAll(".invItem").forEach(item=>{
+    item.addEventListener("click", ()=>selectInvItem(item));
+  });
+
+  // RADS "live reading" animation (subtle up/down)
+  const radFill = document.getElementById("radFill");
+  const radVal  = document.getElementById("radVal");
+
+  if (radFill && radVal) {
+    const basePct = parseFloat(radFill.style.width) || 12;
+    const baseNum = parseInt(radVal.textContent, 10) || 8;
+
+    const ampPct = 4;
+    const ampNum = 2;
+    const intervalMs = 180;
+
+    let t = 0;
 
     setInterval(() => {
-      drift(hpFill, hpVal, 75, 3);
-      drift(apFill, apVal, 60, 4);
-      drift(radFill, radVal, 8, 2);
-    }, 900);
+      t += 0.18;
+      const wobble = Math.sin(t) * ampPct;
+      const noise  = (Math.random() - 0.5) * 0.9;
 
-    // --- Service worker registration (helps Chrome offer true \"Install app\") ---
-    window.addEventListener("load", () => {
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("./sw.js").catch(() => {});
-      }
-    });
-  </script>
+      let pct = basePct + wobble + noise;
+      pct = Math.max(0, Math.min(100, pct));
+      radFill.style.width = pct.toFixed(1) + "%";
+
+      let n = baseNum + Math.round(Math.sin(t * 1.7) * ampNum + (Math.random() - 0.5) * 1.2);
+      n = Math.max(0, n);
+      radVal.textContent = String(n).padStart(3, "0");
+    }, intervalMs);
+  }
+
+  // Boot
+  const lines = [
+    "PIP-BOY 3000 OS V2.1",
+    "ROBCO INDUSTRIES (TM)",
+    "COPYRIGHT 2075-2077 ROBCO",
+    "",
+    "BOOTSTRAP SEQUENCE INIT",
+    "MEMORY BANK A ........ OK",
+    "MEMORY BANK B ........ OK",
+    "MEMORY BANK C ........ OK",
+    "CACHE INTEGRITY ...... OK",
+    "STACK POINTER ........ SET",
+    "",
+    "CPU CORE ............. ONLINE",
+    "FPU MODULE ........... ONLINE",
+    "INSTRUCTION SET ..... VERIFIED",
+    "",
+    "SENSOR ARRAY ........ OK",
+    "BIO MONITOR ......... ACTIVE",
+    "RAD COUNTER ......... CAL",
+    "GEIGER MODULE ....... ACTIVE",
+    "",
+    "AUDIO BUS ........... OK",
+    "VISUAL DISPLAY ...... OK",
+    "PHOSPHOR EMITTER .... STABLE",
+    "",
+    "DATA STORAGE ........ MOUNTED",
+    "LOG PARTITION ....... READY",
+    "ARCHIVE INDEX ....... OK",
+    "",
+    "VAULT ID ............ 33",
+    "USER PROFILE ........ LOADED",
+    "SECURITY TOKEN ...... VALID",
+    "",
+    "POWER CELL .......... NOMINAL",
+    "VOLTAGE ............. 98.7%",
+    "THERMAL STATE ....... NORMAL",
+    "",
+    "FINALIZING SYSTEM",
+    "STARTING UI SERVICES",
+    "",
+    "SYSTEM READY"
+  ];
+
+  let pct=0, i=0;
+  const boot=document.getElementById("boot");
+  const log=document.getElementById("bootLog");
+
+  const timer=setInterval(()=>{
+    pct += Math.random()*4 + 1.5;
+    if(pct>100)pct=100;
+
+    document.getElementById("bootPct").textContent = Math.floor(pct);
+    document.getElementById("bootFill").style.width = pct + "%";
+
+    const step = 100 / (lines.length + 2);
+
+    while (i < lines.length && pct > (i * step)) {
+      log.innerHTML += lines[i++] + "<br>";
+    }
+    log.scrollTop = log.scrollHeight;
+
+    if(pct>=100){
+      clearInterval(timer);
+      setTimeout(()=>boot.remove(),2300);
+    }
+  },90);
+
+  document.addEventListener("pointerdown",()=>boot.remove(),{once:true});
+// MAP interaction: tap/click to place marker + update fake coordinates
+(function initMap(){
+  const map = document.getElementById("mapScreen");
+  const marker = document.getElementById("mapMarker");
+  const coord = document.getElementById("mapCoord");
+  const hdg = document.getElementById("mapHdg");
+  const sig = document.getElementById("mapSig");
+  if (!map || !marker) return;
+
+  // small “signal” flicker for life
+  const sigStates = ["LOCKED", "LOCKED", "LOCKED", "SEARCH", "LOCKED"];
+  let sigI = 0;
+  setInterval(()=>{
+    if (sig) sig.textContent = sigStates[(sigI++) % sigStates.length];
+  }, 1200);
+
+  function setMarker(px, py){
+    const r = map.getBoundingClientRect();
+    const x = Math.max(0, Math.min(1, px / r.width));
+    const y = Math.max(0, Math.min(1, py / r.height));
+
+    marker.style.left = (x * 100).toFixed(1) + "%";
+    marker.style.top  = (y * 100).toFixed(1) + "%";
+
+    // Convert to fake coord space centered on (0,0)
+    const X = ((x - 0.5) * 200).toFixed(1);
+    const Y = ((0.5 - y) * 200).toFixed(1);
+    if (coord) coord.textContent = `X ${X}  Y ${Y}`;
+
+    // Fake heading based on x position
+    const deg = Math.round(x * 360);
+    const dir =
+      deg < 23  || deg >= 338 ? "N" :
+      deg < 68  ? "NE" :
+      deg < 113 ? "E" :
+      deg < 158 ? "SE" :
+      deg < 203 ? "S" :
+      deg < 248 ? "SW" :
+      deg < 293 ? "W" : "NW";
+    if (hdg) hdg.textContent = String(deg).padStart(3,"0") + "° " + dir;
+  }
+
+  // Click/tap support
+  map.addEventListener("pointerdown", (e)=>{
+    const r = map.getBoundingClientRect();
+    setMarker(e.clientX - r.left, e.clientY - r.top);
+  });
+
+  // Initialize based on existing marker style
+  const r0 = map.getBoundingClientRect();
+  if (r0.width && r0.height){
+    setMarker(r0.width * 0.52, r0.height * 0.48);
+  }
+})();
+
+</script>
 </body>
 </html>
