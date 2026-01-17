@@ -266,42 +266,48 @@
 .dataSection{ display:none; height:100%; }
 .dataSection.active{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; }
 
-.bigClock{
-position:absolute;
+/* DATA CLOCK SECTION - flow-based, cannot overlap subtabs */
+#d-clock{
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  padding-top:18px;   /* move up/down as a group */
+  gap:10px;
+  box-sizing:border-box;
+}
 
-  left:50%;
-  top:30%;                 /* move UP – adjust this number */
-  transform:translateX(-50%);
-  font-size:48px;
+.bigClock{
+  position:relative;
+  left:auto; top:auto; transform:none;
+
+  font-size:44px;     /* adjust size here */
   font-weight:900;
   letter-spacing:.20em;
   text-align:center;
+  line-height:1;
   text-shadow:
     0 0 3px rgba(57,255,20,.35),
     0 0 10px rgba(57,255,20,.20);
 }
 
 .bigDate{
-position:absolute;
+  position:relative;
+  left:auto; top:auto; transform:none;
 
-  left:50%;
-  top:40%;                 /* move UP – adjust this number */
-  transform:translateX(-50%);
-
-  font-size:15px;
+  font-size:16px;
   font-weight:800;
   letter-spacing:.26em;
   opacity:.8;
   text-align:center;
+  line-height:1.2;
   text-shadow: 0 0 6px rgba(57,255,20,.18);
 }
 
 .dataSmallReadouts{
-position:absolute;
-
-  left:50%;
-  top:45%;                 /* move UP – adjust this number */
-  transform:translateX(-50%);
+  position:relative;
+  left:auto; top:auto; transform:none;
 
   margin-top:10px;
   width:min(520px, 92%);
@@ -312,16 +318,6 @@ position:absolute;
   flex-direction:column;
   gap:10px;
 }
-
-.dataSmallReadouts > div{
-  display:flex;
-  justify-content:space-between;
-  font-size:12px;
-  letter-spacing:.22em;
-  text-transform:uppercase;
-  opacity:.9;
-}
-
 
 .invGrid, .invListWrap, .invList, .invItem{
   pointer-events:auto;
@@ -480,10 +476,10 @@ position:absolute;
 
 .tabs{
   position:relative;
-  z-index:1000;     /* force above overlays */
+  z-index:1000;
   pointer-events:auto;
-.tabs{ padding-left:22px; padding-right:22px; }
-
+  padding-left:22px;
+  padding-right:22px;
 }
 
 .tab{
@@ -571,11 +567,11 @@ position:absolute;
     .statClock{
   position:absolute;
 
-  left:50%;
+  left:55%;
   top:1.6%;                 /* was ~3–6% → this moves it UP a lot */
   transform:translateX(-50%);
 
-  font-size:28px;           /* slightly tighter for bezel-safe view */
+  font-size:20px;           /* slightly tighter for bezel-safe view */
   letter-spacing:.22em;
   font-weight:800;
 
