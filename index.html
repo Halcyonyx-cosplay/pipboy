@@ -20,6 +20,22 @@
 
   box-sizing: border-box;
 }
+.mapBg{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  opacity:0;                 /* hidden by default */
+  transition:opacity .2s ease;
+}
+
+.mapBg img{
+  width:100%;
+  height:100%;
+  object-fit:cover;          /* fills entire screen */
+  object-position:center;
+  filter: grayscale(1) contrast(1.1) brightness(.85);
+}
 
 /* MAP page */
 .mapGrid{
@@ -251,7 +267,12 @@
 .dataSection.active{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; }
 
 .bigClock{
-  font-size:82px;
+position:absolute;
+
+  left:50%;
+  top:20%;                 /* move UP – adjust this number */
+  transform:translateX(-50%);
+  font-size:48px;
   font-weight:900;
   letter-spacing:.20em;
   text-align:center;
@@ -261,7 +282,13 @@
 }
 
 .bigDate{
-  font-size:24px;
+position:absolute;
+
+  left:50%;
+  top:30%;                 /* move UP – adjust this number */
+  transform:translateX(-50%);
+
+  font-size:15px;
   font-weight:800;
   letter-spacing:.26em;
   opacity:.8;
@@ -270,6 +297,12 @@
 }
 
 .dataSmallReadouts{
+position:absolute;
+
+  left:50%;
+  top:35%;                 /* move UP – adjust this number */
+  transform:translateX(-50%);
+
   margin-top:10px;
   width:min(520px, 92%);
   border:1px solid var(--line);
@@ -519,41 +552,42 @@
     }
 
     .statGif{
-      position:absolute;
+  position:absolute;
 
-      /* size: ~20% smaller */
-      width:72%;
-      height:72%;
+  width:86%;                /* was 72% */
+  height:86%;               /* was 72% */
 
-      /* center horizontally, lift vertically */
-      left:50%;
-      top:44%;
-      transform:translate(-50%, -50%);
+  left:50%;
+  top:46%;                  /* was 44% (higher on screen = smaller number) */
+  transform:translate(-50%, -50%);
 
-      object-fit:contain;
-      pointer-events:none;
+  object-fit:contain;
+  pointer-events:none;
 
-      /* Pip-Boy glow */
-      filter: drop-shadow(0 0 14px rgba(57,255,20,.35));
-    }
+  filter: drop-shadow(0 0 14px rgba(57,255,20,.35));
+}
+
 
     .statClock{
-      position:absolute;
-      left:50%;
-      top:6%;
-      transform:translateX(-50%);
+  position:absolute;
 
-      font-size:36px;
-      letter-spacing:.22em;
-      font-weight:800;
+  left:50%;
+  top:1.6%;                 /* was ~3–6% → this moves it UP a lot */
+  transform:translateX(-50%);
 
-      color: var(--fg);
-      pointer-events:none;
+  font-size:28px;           /* slightly tighter for bezel-safe view */
+  letter-spacing:.22em;
+  font-weight:800;
 
-      text-shadow:
-        0 0 4px rgba(57,255,20,.35),
-        0 0 8px rgba(57,255,20,.25);
-    }
+  color: var(--fg);
+  pointer-events:none;
+
+  text-shadow:
+    0 0 4px rgba(57,255,20,.35),
+    0 0 8px rgba(57,255,20,.25);
+}
+
+
 
     .statSub{
       margin-top:6px;
@@ -585,12 +619,12 @@
       opacity:.9;
     }
 
-    .limb.head  { left:50.5%; top:20%; transform:translate(-50%,-50%); }
-    .limb.torso { left:50.5%; top:69%; transform:translate(-50%,-50%); }
-    .limb.armL  { left:21%; top:38%; transform:translate(-50%,-50%); }
-    .limb.armR  { left:79%; top:38%; transform:translate(-50%,-50%); }
-    .limb.legL  { left:21%; top:57%; transform:translate(-50%,-50%); }
-    .limb.legR  { left:79%; top:57%; transform:translate(-50%,-50%); }
+    .limb.head  { left:50.5%; top:18%; transform:translate(-50%,-50%); }
+    .limb.torso { left:50.5%; top:71%; transform:translate(-50%,-50%); }
+    .limb.armL  { left:15%; top:40%; transform:translate(-50%,-50%); }
+    .limb.armR  { left:85%; top:40%; transform:translate(-50%,-50%); }
+    .limb.legL  { left:15%; top:60%; transform:translate(-50%,-50%); }
+    .limb.legR  { left:85%; top:60%; transform:translate(-50%,-50%); }
 
     .meters{
       display:flex;
@@ -873,6 +907,10 @@
 
 <body>
 <div class="screen scanlines">
+  <div class="mapBg" id="mapBg" aria-hidden="true">
+    <img src="map.png" alt="">
+  </div>
+
  <div class="safe-frame">
   <div class="tabs">
     <div class="tab active" data-page="stat">STAT</div>
@@ -1069,8 +1107,8 @@
 
   <div class="boot" id="boot">
     <div class="bootHeader">
-      <div>VAULT-TEC INDUSTRIES</div>
-      <div>Tap to skip</div>
+      <div> . </div>
+      <div>.  </div>
     </div>
 
     <div class="bootLog" id="bootLog"></div>
