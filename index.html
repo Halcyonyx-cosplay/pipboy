@@ -14,9 +14,10 @@
 
   top: 3mm;
   bottom: 3mm;
-  left: 3mm;
-  right: 52mm; /* bezel eats the right side */
+  left: 1mm;
+  right: 62mm; /* bezel eats the right side */
   box-sizing: border-box;
+ overflow:hidden;
 }
 .mapBg{
   position:absolute;
@@ -399,7 +400,7 @@
     /* Tabs */
     .tabs{
       display:flex;
-      justify-content:space-evenly; /* spreads STAT/INV/DATA/MAP/RADIO evenly */
+      justify-content:space-between;
       align-items:center;
       width:100%;
       padding:14px 18px 10px;
@@ -407,9 +408,10 @@
       border-bottom:1px solid var(--line);
       margin-top: 1.5mm;
 
-      letter-spacing:.20em;
+      letter-spacing:.18em;
       font-size:20px;
       text-transform:uppercase;
+box-sizing:border-box;
     }
 
     .tab{
@@ -489,6 +491,7 @@
       padding:18px;
       height:calc(100% - 54px);
       box-sizing:border-box;
+overflow:hidden;
     }
 
     /* Pages */
@@ -505,10 +508,13 @@
     }
 
     .panel{
-      padding:16px;
-      border-right:1px solid var(--line);
-      position:relative;
-    }
+  padding:16px;
+  padding-right:28px; /* extra space away from bezel edge */
+  border-right:1px solid var(--line);
+  position:relative;
+  box-sizing:border-box;
+  overflow:hidden;
+}
 
     .panel:last-child{
       border-right:none;
