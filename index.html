@@ -14,10 +14,8 @@
 
   top: 3mm;
   bottom: 3mm;
-  left: 3mm;
-
+  left: 1mm;
   right: 45mm; /* bezel eats the right side */
-
   box-sizing: border-box;
 }
 .mapBg{
@@ -564,24 +562,21 @@
 }
 
 
-    .statClock{
+   .statClock{
   position:absolute;
-
-  left:55%;
-  top:1.6%;                 /* was ~3–6% → this moves it UP a lot */
+  left:50%;
+  top:0.3%;              /* keep whatever height you like */
   transform:translateX(-50%);
-
-  font-size:20px;           /* slightly tighter for bezel-safe view */
+  font-size:20px;
   letter-spacing:.22em;
   font-weight:800;
-
-  color: var(--fg);
+  color:var(--fg);
   pointer-events:none;
-
   text-shadow:
     0 0 4px rgba(57,255,20,.35),
     0 0 8px rgba(57,255,20,.25);
 }
+
 
 
 
@@ -926,8 +921,7 @@
             <div class="silhouetteBox">
               <div class="statClock">
                 <div id="miniClock"></div>
-                <div class="statSub" id="miniDate"></div>
-              </div>
+                             </div>
 
               <img class="statGif" src="Stat.gif" alt="">
 
